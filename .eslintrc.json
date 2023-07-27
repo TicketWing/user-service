@@ -12,6 +12,12 @@
       "prettier"
     ],
     "rules": { 
-      "no-console": 2 
+      "no-console": 2,
+      "indent": ["error", 2],
+      "linebreak-style": ["error", "unix"],
+      "semi": ["error", "always"],
+      "no-unused-vars": "warn",
+      "no-async-promise-executor": "error",
+      "no-return-await": "error"
     }
   }
