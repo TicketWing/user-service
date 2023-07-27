@@ -1,5 +1,5 @@
-import { Application } from "express";
-import { userRouter } from "./user.router";
+import { Application } from 'express';
+import { userRouter } from './user.router';
 
 export class AppRouters {
   private app: Application;

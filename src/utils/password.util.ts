@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import crypto from 'node:crypto';
 
 export class PasswordUtil {
   private util: any;
@@ -10,7 +10,7 @@ export class PasswordUtil {
     this.util = crypto;
     this.salt = process.env.SECRET_KEY;
     this.length = 64;
-    this.method = "hex";
+    this.method = 'hex';
   }
   hash(password: string) {
     return this.util
