@@ -17,33 +17,43 @@ export class DatabaseUtil {
     this.tableName = tableName;
   }
 
-  async insert<T>(data: T): Promise<void> {
+  private async handler<T>(promise: Promise<T>, msg: string): Promise<T> {
     try {
-      const inserted = await this.database(this.tableName)
-        .insert(data)
-        .returning("id");
-      const key = inserted[0].id;
-      await this.redis.set(key, data);
+      const result = await promise;
+      return result;
     } catch (error) {
-      throw new CustomError("Database", "Error in insert", 500);
+      throw new CustomError("Database", msg, 500);
     }
+  }
+
+  async getById<T>(id: string) {
+    const cached = await this.redis.get<T>(id);
+
+    if (!cached) {
+      const query = this.database(this.tableName).select();
+      const result = await this.handler(query, "Error in get");
+      return result;
+    }
+
+    return cached;
+  }
+
+  async insert<T>(data: T): Promise<void> {
+    const query = this.database(this.tableName).insert(data).returning("id");
+    const inserted = await this.handler(query, "Error in insert");
+    const key = inserted[0].id;
+    await this.redis.set(key, data);
   }
 
   async update<T>(key: string, condition: Condition, data: T): Promise<void> {
-    try {
-      await this.database(this.tableName).where(condition).update(data);
-      await this.redis.update(key, data);
-    } catch (error) {
-      throw new CustomError("Database", "Error in update", 500);
-    }
+    const query = this.database(this.tableName).where(condition).update(data);
+    await this.handler(query, "Error in update");
+    await this.redis.update(key, data);
   }
 
   async delete(key: string, condition: Condition): Promise<void> {
-    try {
-      await this.database.where(condition).del();
-      await this.redis.delete(key);
-    } catch (error) {
-      throw new CustomError("Database", "Error in delete", 500);
-    }
+    const query = this.database.where(condition).del();
+    await this.handler(query, "Error in delete");
+    await this.redis.delete(key);
   }
 }
