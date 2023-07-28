@@ -2,8 +2,16 @@ import knex, { Knex } from "knex";
 import { RedisUtil } from "./redis.util";
 import { CustomError } from "./error.util";
 
-type Condition = {
-  [key: string]: any;
+type Options = {
+  key?: string;
+  cacheable?: boolean;
+};
+
+type ExtendedOptions = Options & {
+  conditions: {
+    [key: string]: string;
+  };
+  rows?: string[];
 };
 
 export class DatabaseUtil {
@@ -26,7 +34,15 @@ export class DatabaseUtil {
     }
   }
 
-  async getById<T>(id: string) {
+  async get<T>(options: ExtendedOptions): Promise<any[]> {
+    const { conditions, rows } = options;
+    const response = await this.database
+      .where(conditions)
+      .select(...(rows || []));
+    return response;
+  }
+
+  async getCache<T>(id: string) {
     const cached = await this.redis.get<T>(id);
 
     if (!cached) {
@@ -38,22 +54,36 @@ export class DatabaseUtil {
     return cached;
   }
 
-  async insert<T>(data: T): Promise<void> {
+  async insert<T>(data: T, options: Options): Promise<string> {
+    const { cacheable } = options;
     const query = this.database(this.tableName).insert(data).returning("id");
     const inserted = await this.handler(query, "Error in insert");
     const key = inserted[0].id;
-    await this.redis.set(key, data);
+
+    if (cacheable) {
+      await this.redis.set(key, data);
+    }
+
+    return key;
   }
 
-  async update<T>(key: string, condition: Condition, data: T): Promise<void> {
-    const query = this.database(this.tableName).where(condition).update(data);
+  async update<T>(options: ExtendedOptions, data: T): Promise<void> {
+    const { key, conditions } = options;
+    const query = this.database(this.tableName).where(conditions).update(data);
     await this.handler(query, "Error in update");
-    await this.redis.update(key, data);
+
+    if (key) {
+      await this.redis.update(key, data);
+    }
   }
 
-  async delete(key: string, condition: Condition): Promise<void> {
-    const query = this.database.where(condition).del();
+  async delete(options: ExtendedOptions): Promise<void> {
+    const { key, conditions } = options;
+    const query = this.database.where(conditions).del();
     await this.handler(query, "Error in delete");
-    await this.redis.delete(key);
+
+    if (key) {
+      await this.redis.delete(key);
+    }
   }
 }
