@@ -1,43 +1,70 @@
 import config from "../../knexfile";
-import { DatabaseUtil } from "../utils/database.util";
+import { FinalStep, InitialStep, Login } from "../types/user.types";
+import { Storage, OptionsBuilder } from "ticketwing-storage-util";
+import { PasswordUtil } from "../utils/password.util";
 import { CheckpointService } from "./checkpoint.service";
-
-type initialRegistration = {
-  email: string;
-  password: string;
-};
-
-type finalRegistration = {
-  id: string;
-  email: string;
-  age: number;
-  name: string;
-};
+import { redisConf } from "../confs/redis.conf";
+import { CustomError } from "../utils/error.util";
+import { TokenUtil } from "../utils/token.util";
 
 export class UserService {
-  private database: DatabaseUtil;
+  private storage: Storage;
   private checkpoint: CheckpointService;
+  private password: PasswordUtil;
+  private token: TokenUtil;
 
   constructor() {
-    this.database = new DatabaseUtil(config.development, "users");
+    this.storage = new Storage(config.development, redisConf, "users");
     this.checkpoint = new CheckpointService();
+    this.password = new PasswordUtil();
+    this.token = new TokenUtil();
   }
 
-  async initRegistration(data: initialRegistration) {
-    const options = { cacheable: false };
-    const user_id = await this.database.insert(data, options);
+  async getByEmail(email: string) {
+    const options = new OptionsBuilder()
+      .setSelect(["email", "password"])
+      .setConditions({ email })
+      .build();
+    const account = await this.storage.get(options);
+    return account;
+  }
+
+  async initRegistration(data: InitialStep) {
+    const options = new OptionsBuilder()
+      .setCacheable(true)
+      .setReturning(["id", "email"])
+      .build();
+    const user_id = await this.storage.insert(data, options);
     await this.checkpoint.setState(user_id);
   }
 
-  async finishRegistration(data: finalRegistration) {
+  async finishRegistration(data: FinalStep) {
     const { id, ...userInfo } = data;
-    const conditions = { id };
-    const options = { key: id, conditions };
-    await this.database.update(options, userInfo);
+    const options = new OptionsBuilder()
+      .setCacheable(true)
+      .setKey(id)
+      .setConditions({ id })
+      .build();
+    await this.storage.update(userInfo, options);
     await this.checkpoint.setState(id);
   }
 
-  async login() {
-    // Проблема: нельзя хранить в cache пароль пользователей!
+  async login(data: Login): Promise<string | null> {
+    const [account] = await this.getByEmail(data.email);
+    const { id, email, password } = account;
+    const hasedEnteredPass = this.password.hash(data.password);
+    const similar = this.password.compare(hasedEnteredPass, password);
+    const state = await this.checkpoint.getState(id);
+
+    if (!similar) {
+      throw new CustomError("Auth Error", "Invalid input!", 403);
+    }
+
+    if (similar && state) {
+      const token = this.token.generate(id, email);
+      return token;
+    }
+
+    return null;
   }
 }

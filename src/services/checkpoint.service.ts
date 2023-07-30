@@ -1,5 +1,6 @@
+import { OptionsBuilder, Storage } from "ticketwing-storage-util";
 import config from "../../knexfile";
-import { DatabaseUtil } from "../utils/database.util";
+import { redisConf } from "../confs/redis.conf";
 
 type Checkpoint = {
   user_id: string;
@@ -8,27 +9,39 @@ type Checkpoint = {
 
 export class CheckpointService {
   private table = "checkpoints";
-  private database: DatabaseUtil;
+  private database: Storage;
 
   constructor() {
-    this.database = new DatabaseUtil(config.development, this.table);
+    this.database = new Storage(config.development, redisConf, this.table);
   }
 
   async setState(user_id: string) {
-    const rows = ["isFinished"];
-    const conditions = { user_id };
-    const options = { conditions, rows };
+    const options = new OptionsBuilder()
+      .setConditions({ user_id })
+      .setSelect(["isFinished"])
+      .build();
     const records = await this.database.get(options);
 
     if (!records.length) {
       const data = { user_id };
-      const options = { cacheable: false };
+      const options = new OptionsBuilder().build();
       await this.database.insert(data, options);
       return;
     }
 
     const data = { ...records[0] };
     data.isFinished = !data.isFinished;
-    await this.database.update<Checkpoint>(options, data);
+    await this.database.update<Checkpoint>(data, options);
+  }
+
+  async getState(user_id: string) {
+    const options = new OptionsBuilder()
+      .setConditions({ user_id })
+      .setSelect(["isFinished"])
+      .build();
+
+    const record = await this.database.get(options);
+    const state = record[0].isFinished;
+    return state;
   }
 }

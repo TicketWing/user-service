@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export class TokenUtil {
   private jwt: any;
@@ -7,7 +7,7 @@ export class TokenUtil {
     this.jwt = jwt;
   }
 
-  generate(email: string) {
-    return this.jwt.sign({ email }, process.env.SECRET_KEY);
+  generate(id: string, email: string) {
+    return this.jwt.sign({ id, email }, process.env.SECRET_KEY);
   }
 }
