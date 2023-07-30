@@ -1,16 +1,15 @@
-import crypto from 'node:crypto';
+import crypto from "node:crypto";
 
 export class PasswordUtil {
-  private util: any;
+  private util = crypto;
   private salt: string;
   private length: number;
-  private method: string;
+  private method: BufferEncoding;
 
   constructor() {
-    this.util = crypto;
     this.salt = process.env.SECRET_KEY;
     this.length = 64;
-    this.method = 'hex';
+    this.method = "hex";
   }
   hash(password: string) {
     return this.util
