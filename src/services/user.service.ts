@@ -1,5 +1,5 @@
 import config from "../../knexfile";
-import { FinalStep, InitialStep, Login } from "../types/user.types";
+import { AuthSucces, FinalStep, InitialStep, Login } from "../types/user.types";
 import { Storage, OptionsBuilder } from "ticketwing-storage-util";
 import { PasswordUtil } from "../utils/password.util";
 import { CheckpointService } from "./checkpoint.service";
@@ -49,7 +49,7 @@ export class UserService {
     await this.checkpoint.setState(id);
   }
 
-  async login(data: Login): Promise<string | null> {
+  async login(data: Login): Promise<AuthSucces> {
     const [account] = await this.getByEmail(data.email);
     const { id, email, password } = account;
     const hasedEnteredPass = this.password.hash(data.password);
@@ -60,11 +60,12 @@ export class UserService {
       throw new CustomError("Auth Error", "Invalid input!", 403);
     }
 
+    const token = this.token.generate(id, email);
+
     if (similar && state) {
-      const token = this.token.generate(id, email);
-      return token;
+      return { token };
     }
 
-    return null;
+    return { token, redirect: true, url: "/registration/step/2" };
   }
 }

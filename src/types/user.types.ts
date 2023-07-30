@@ -13,3 +13,9 @@ export type Login = {
   email: string;
   password: string;
 };
+
+export type AuthSucces = {
+  redirect?: boolean;
+  url?: string;
+  token: string;
+};
