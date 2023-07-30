@@ -1,13 +1,42 @@
 import jwt from "jsonwebtoken";
+import { AuthTokens, Identification } from "../types/user.types";
+import { TokenOptions } from "../types/token.types";
 
 export class TokenUtil {
-  private jwt: any;
+  private util = jwt;
+  private accessOptions: TokenOptions;
+  private refreshOptions: TokenOptions;
 
   constructor() {
-    this.jwt = jwt;
+    this.accessOptions = {
+      secret: process.env.ACCESS_SECRET,
+      expiresIn: process.env.ACCESS_EXPIRATION,
+    };
+    this.refreshOptions = {
+      secret: process.env.REFRESH_SECRET,
+      expiresIn: process.env.REFRESF_EXPIRATION,
+    };
   }
 
-  generate(id: string, email: string) {
-    return this.jwt.sign({ id, email }, process.env.SECRET_KEY);
+  private generate(value: Identification, secret: string, expiresIn: string) {
+    return this.util.sign(value, secret, { expiresIn });
+  }
+
+  getAccessToken(value: Identification): string {
+    const { secret, expiresIn } = this.accessOptions;
+    const token = this.generate(value, secret, expiresIn);
+    return `Bearer ${token}`;
+  }
+
+  getRefreshToken(value: Identification): string {
+    const { secret, expiresIn } = this.refreshOptions;
+    const token = this.generate(value, secret, expiresIn);
+    return token;
+  }
+
+  getTokens(value: Identification): AuthTokens {
+    const accessToken = this.getAccessToken(value);
+    const refreshToken = this.getRefreshToken(value);
+    return { accessToken, refreshToken };
   }
 }

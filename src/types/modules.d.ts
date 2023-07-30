@@ -7,6 +7,10 @@ declare global {
       DB_NAME: string;
       REDIS_USERNAME: string;
       REDIS_PASSWORD: string;
+      ACCESS_SECRET: string;
+      REFRESH_SECRET: string;
+      ACCESS_EXPIRATION: string;
+      REFRESF_EXPIRATION: string;
     }
   }
 }

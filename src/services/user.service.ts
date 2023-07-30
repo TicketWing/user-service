@@ -1,23 +1,29 @@
-import config from "../../knexfile";
-import { AuthSucces, FinalStep, InitialStep, Login } from "../types/user.types";
-import { Storage, OptionsBuilder } from "ticketwing-storage-util";
-import { PasswordUtil } from "../utils/password.util";
-import { CheckpointService } from "./checkpoint.service";
-import { redisConf } from "../confs/redis.conf";
+import {
+  Login,
+  FinalStep,
+  AuthTokens,
+  InitialStep,
+  AuthRedirect,
+} from "../types/user.types";
+import knexConfig from "../../knexfile";
+import { redisConfig } from "../confs/redis.conf";
 import { CustomError } from "../utils/error.util";
-import { TokenUtil } from "../utils/token.util";
+import { PasswordUtil } from "../utils/password.util";
+import { TokenService } from "./token.service";
+import { CheckpointService } from "./checkpoint.service";
+import { Storage, OptionsBuilder } from "ticketwing-storage-util";
 
 export class UserService {
+  private token: TokenService;
   private storage: Storage;
-  private checkpoint: CheckpointService;
   private password: PasswordUtil;
-  private token: TokenUtil;
+  private checkpoint: CheckpointService;
 
   constructor() {
-    this.storage = new Storage(config.development, redisConf, "users");
-    this.checkpoint = new CheckpointService();
+    this.token = new TokenService();
     this.password = new PasswordUtil();
-    this.token = new TokenUtil();
+    this.checkpoint = new CheckpointService();
+    this.storage = new Storage(knexConfig.development, redisConfig, "users");
   }
 
   async getByEmail(email: string) {
@@ -29,43 +35,47 @@ export class UserService {
     return account;
   }
 
-  async initRegistration(data: InitialStep) {
+  async initRegistration(data: InitialStep): Promise<AuthRedirect> {
     const options = new OptionsBuilder()
       .setCacheable(true)
       .setReturning(["id", "email"])
       .build();
-    const user_id = await this.storage.insert(data, options);
-    await this.checkpoint.setState(user_id);
+    const id = await this.storage.insert(data, options);
+    await this.checkpoint.setState(id);
+    const encodedData = { id, email: data.email };
+    const accessToken = this.token.getAccessToken(encodedData);
+    return { accessToken, redirect: true, url: "/registration/step/2" };
   }
 
-  async finishRegistration(data: FinalStep) {
-    const { id, ...userInfo } = data;
+  async finishRegistration(data: FinalStep): Promise<AuthTokens> {
+    const { id, email, ...info } = data;
     const options = new OptionsBuilder()
       .setCacheable(true)
       .setKey(id)
       .setConditions({ id })
       .build();
-    await this.storage.update(userInfo, options);
+    await this.storage.update(info, options);
     await this.checkpoint.setState(id);
+    const tokens = await this.token.getTokens({ id, email });
+    return tokens;
   }
 
-  async login(data: Login): Promise<AuthSucces> {
-    const [account] = await this.getByEmail(data.email);
-    const { id, email, password } = account;
-    const hasedEnteredPass = this.password.hash(data.password);
-    const similar = this.password.compare(hasedEnteredPass, password);
-    const state = await this.checkpoint.getState(id);
+  async login(data: Login): Promise<AuthRedirect | AuthTokens> {
+    const records = await this.getByEmail(data.email);
+    const { password, ...encoded } = records[0];
+    const similar = this.password.compare(data.password, password);
+    const state = await this.checkpoint.getState(encoded.id);
 
     if (!similar) {
       throw new CustomError("Auth Error", "Invalid input!", 403);
     }
 
-    const token = this.token.generate(id, email);
-
     if (similar && state) {
-      return { token };
+      const tokens = this.token.getTokens(encoded);
+      return tokens;
     }
 
-    return { token, redirect: true, url: "/registration/step/2" };
+    const accessToken = this.token.getAccessToken(encoded);
+    return { accessToken, redirect: true, url: "/registration/step/2" };
   }
 }
