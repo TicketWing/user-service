@@ -26,6 +26,11 @@ export class UserService {
     this.storage = new Storage(knexConfig.development, redisConfig, "users");
   }
 
+  async getById(id: string) {
+    const account = await this.storage.getCache(id);
+    return account;
+  }
+
   async getByEmail(email: string) {
     const options = new OptionsBuilder()
       .setSelect(["email", "password"])

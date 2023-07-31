@@ -1,5 +1,9 @@
 import { UserService } from "../services/user.service";
-import { AuthedExtendedRequest, ExtendedRequest } from "../types/request.types";
+import {
+  AuthedExtendedRequest,
+  AuthedRequest,
+  ExtendedRequest,
+} from "../types/request.types";
 import { InitialStep, Login } from "../types/user.types";
 
 export class UserController {
@@ -25,6 +29,18 @@ export class UserController {
   async login(req: ExtendedRequest<Login>) {
     const { body } = req;
     const result = await this.service.login(body);
+    return result;
+  }
+
+  async getById(req: AuthedRequest) {
+    const { identification } = req;
+    const result = this.service.getById(identification.id);
+    return result;
+  }
+
+  async getByEmail(req: ExtendedRequest<InitialStep>) {
+    const { body } = req;
+    const result = this.service.getByEmail(body.email);
     return result;
   }
 }

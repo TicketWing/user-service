@@ -1,19 +1,27 @@
 import { NextFunction, Response } from "express";
 import { CustomError } from "../utils/error.util";
+import { CheckOptions } from "../types/middlewares.types";
 
-type CheckOptions = {
-  fn: any;
-  isRequired: boolean;
-  key: string;
-  storage: string;
+const getKey = (pathToKey: string[], req: any) => {
+  let tmp = req;
+
+  for (const field of pathToKey) {
+    if (tmp && tmp[field]) {
+      tmp = tmp[field];
+      continue;
+    }
+    return undefined;
+  }
+
+  return tmp;
 };
 
 export const checkExistance =
   (options: CheckOptions) =>
   async (req: any, _res: Response, next: NextFunction) => {
-    const { fn, isRequired, key, storage } = options;
-    const identificator = req[storage][key];
-    const instance = await fn(identificator);
+    const { fn, isRequired, pathToKey } = options;
+    const key = getKey(pathToKey, req);
+    const instance = await fn(key);
 
     if (isRequired && instance) {
       return next();
