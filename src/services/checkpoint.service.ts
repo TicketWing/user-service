@@ -1,3 +1,8 @@
+import {
+  GetDBOptions,
+  InsertDBOptions,
+  UpdateDBOptions,
+} from "ticketwing-storage-util/src/types/database.types";
 import knexConfig from "../../knexfile";
 import { redisConfig } from "../confs/redis.conf";
 import { Checkpoint } from "../types/checkpoint.types";
@@ -12,32 +17,45 @@ export class CheckpointService {
   }
 
   async setState(user_id: string) {
-    const options = new OptionsBuilder()
-      .setConditions({ user_id })
-      .setSelect(["isFinished"])
-      .build();
-    const records = await this.storage.get(options);
+    const getDbOptions = { where: { user_id }, select: ["isFinished"] };
+
+    const getOptions = new OptionsBuilder<GetDBOptions, undefined>(
+      getDbOptions
+    ).build();
+
+    const records = await this.storage.get(getOptions);
 
     if (!records.length) {
       const data = { user_id };
-      const options = new OptionsBuilder().build();
+      const insertDbOptions = { returning: [] };
+
+      const options = new OptionsBuilder<InsertDBOptions, undefined>(
+        insertDbOptions
+      ).build();
+
       await this.storage.insert(data, options);
       return;
     }
 
     const data = { ...records[0] };
     data.isFinished = !data.isFinished;
-    await this.storage.update<Checkpoint>(data, options);
+    const updateDbOptions = { where: { user_id } };
+
+    const updateOptions = new OptionsBuilder<UpdateDBOptions, undefined>(
+      updateDbOptions
+    ).build();
+
+    await this.storage.update<Checkpoint>(data, updateOptions);
   }
 
   async getState(user_id: string) {
-    const options = new OptionsBuilder()
-      .setConditions({ user_id })
-      .setSelect(["isFinished"])
-      .build();
+    const dbOptions = { where: { user_id }, select: ["isFinished"] };
 
+    const options = new OptionsBuilder<GetDBOptions, undefined>(
+      dbOptions
+    ).build();
+    
     const record = await this.storage.get(options);
-    const state = record[0].isFinished;
-    return state;
+    return record[0].isFinished;
   }
 }

@@ -12,6 +12,16 @@ import { PasswordUtil } from "../utils/password.util";
 import { TokenService } from "./token.service";
 import { CheckpointService } from "./checkpoint.service";
 import { Storage, OptionsBuilder } from "ticketwing-storage-util";
+import {
+  GetDBOptions,
+  InsertDBOptions,
+  UpdateDBOptions,
+} from "ticketwing-storage-util/src/types/database.types";
+import {
+  GetCacheOptions,
+  InsertCacheOptions,
+  UpdateCacheOptions,
+} from "ticketwing-storage-util/src/types/cache.types";
 
 export class UserService {
   private token: TokenService;
@@ -27,24 +37,43 @@ export class UserService {
   }
 
   async getById(id: string) {
-    const account = await this.storage.getCache(id);
+    const select = ["email", "password"];
+    const cachedFields = select;
+
+    const options = new OptionsBuilder<GetDBOptions, GetCacheOptions>({
+      where: { id },
+      select,
+    })
+      .setCacheable(true)
+      .setCacheOptions({ cacheKey: id, cachedFields })
+      .build();
+
+    const account = await this.storage.get(options);
     return account;
   }
 
   async getByEmail(email: string) {
-    const options = new OptionsBuilder()
-      .setSelect(["email", "password"])
-      .setConditions({ email })
+    const dbOptions = { where: { email }, select: ["id", "email", "password"] };
+
+    const options = new OptionsBuilder<GetDBOptions, GetCacheOptions>(dbOptions)
+      .setCacheable(false)
       .build();
+
     const account = await this.storage.get(options);
     return account;
   }
 
   async initRegistration(data: InitialStep): Promise<AuthRedirect> {
-    const options = new OptionsBuilder()
+    const dbOptions = { returning: ["id", "email", "name"] };
+    const cacheOptions = { keyField: "id", cachedFields: ["email", "name"] };
+
+    const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
+      dbOptions
+    )
       .setCacheable(true)
-      .setReturning(["id", "email"])
+      .setCacheOptions(cacheOptions)
       .build();
+
     const id = await this.storage.insert(data, options);
     await this.checkpoint.setState(id);
     const encodedData = { id, email: data.email };
@@ -54,11 +83,16 @@ export class UserService {
 
   async finishRegistration(data: FinalStep): Promise<AuthTokens> {
     const { id, email, ...info } = data;
-    const options = new OptionsBuilder()
+    const dbOptions = { where: { id, email } };
+    const cacheOptions = { cacheKey: id, updatingFields: ["age", "number"] };
+
+    const options = new OptionsBuilder<UpdateDBOptions, UpdateCacheOptions>(
+      dbOptions
+    )
       .setCacheable(true)
-      .setKey(id)
-      .setConditions({ id })
+      .setCacheOptions(cacheOptions)
       .build();
+
     await this.storage.update(info, options);
     await this.checkpoint.setState(id);
     const tokens = await this.token.getTokens({ id, email });

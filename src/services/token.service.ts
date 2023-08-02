@@ -3,6 +3,8 @@ import { redisConfig } from "../confs/redis.conf";
 import { TokenUtil } from "../utils/token.util";
 import { Identification } from "../types/user.types";
 import { OptionsBuilder, Storage } from "ticketwing-storage-util";
+import { InsertDBOptions } from "ticketwing-storage-util/src/types/database.types";
+import { InsertCacheOptions } from "ticketwing-storage-util/src/types/cache.types";
 
 export class TokenService {
   private table = "tokens";
@@ -20,12 +22,18 @@ export class TokenService {
 
   async getTokens(value: Identification) {
     const { accessToken, refreshToken } = this.util.getTokens(value);
-    const insertable = { user_id: value.id, refreshToken };
-    const options = new OptionsBuilder()
+    const data = { user_id: value.id, refreshToken };
+    const dbOptions = { returning: ["user_id", "token"] };
+    const cacheOptions = { keyField: "user_id", cachedFields: ["token"] };
+
+    const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
+      dbOptions
+    )
       .setCacheable(true)
-      .setReturning(["id", "refreshToken"])
+      .setCacheOptions(cacheOptions)
       .build();
-    await this.storage.insert(insertable, options);
+
+    await this.storage.insert(data, options);
     return { accessToken, refreshToken };
   }
 }
