@@ -44,7 +44,6 @@ export class UserService {
       where: { id },
       select,
     })
-      .setCacheable(true)
       .setCacheOptions({ cacheKey: id, cachedFields })
       .build();
 
@@ -56,7 +55,6 @@ export class UserService {
     const dbOptions = { where: { email }, select: ["id", "email", "password"] };
 
     const options = new OptionsBuilder<GetDBOptions, GetCacheOptions>(dbOptions)
-      .setCacheable(false)
       .build();
 
     const account = await this.storage.get(options);
@@ -70,7 +68,6 @@ export class UserService {
     const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
       dbOptions
     )
-      .setCacheable(true)
       .setCacheOptions(cacheOptions)
       .build();
 
@@ -89,7 +86,6 @@ export class UserService {
     const options = new OptionsBuilder<UpdateDBOptions, UpdateCacheOptions>(
       dbOptions
     )
-      .setCacheable(true)
       .setCacheOptions(cacheOptions)
       .build();
 

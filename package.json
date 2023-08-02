@@ -187,7 +187,7 @@
     "supports-color": "^7.2.0",
     "supports-preserve-symlinks-flag": "^1.0.0",
     "text-table": "^0.2.0",
-    "ticketwing-storage-util": "^1.4.2",
+    "ticketwing-storage-util": "^1.4.5",
     "to-regex-range": "^5.0.1",
     "tsconfig-paths": "^3.14.2",
     "tslib": "^1.14.1",

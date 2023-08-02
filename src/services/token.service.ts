@@ -29,7 +29,6 @@ export class TokenService {
     const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
       dbOptions
     )
-      .setCacheable(true)
       .setCacheOptions(cacheOptions)
       .build();
 
