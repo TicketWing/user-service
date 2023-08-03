@@ -10,7 +10,7 @@ const config = {
       database: process.env.DB_NAME,
     },
     migrations: {
-      directory: "app/migrations",
+      directory: "./migrations",
     },
   },
 };
