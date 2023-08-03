@@ -1,4 +1,4 @@
-host=db
+host=user-database
 port=3306
 
 
@@ -7,4 +7,5 @@ while ! nc -z $host $port; do
 done
 
 npx knex migrate:latest
+
 node ./src/index.js

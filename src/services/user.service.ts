@@ -11,17 +11,16 @@ import { CustomError } from "../utils/error.util";
 import { PasswordUtil } from "../utils/password.util";
 import { TokenService } from "./token.service";
 import { CheckpointService } from "./checkpoint.service";
-import { Storage, OptionsBuilder } from "ticketwing-storage-util";
 import {
+  Storage,
+  OptionsBuilder,
   GetDBOptions,
-  InsertDBOptions,
-  UpdateDBOptions,
-} from "ticketwing-storage-util/src/types/database.types";
-import {
   GetCacheOptions,
+  InsertDBOptions,
   InsertCacheOptions,
+  UpdateDBOptions,
   UpdateCacheOptions,
-} from "ticketwing-storage-util/src/types/cache.types";
+} from "ticketwing-storage-util";
 
 export class UserService {
   private token: TokenService;
@@ -54,8 +53,9 @@ export class UserService {
   async getByEmail(email: string) {
     const dbOptions = { where: { email }, select: ["id", "email", "password"] };
 
-    const options = new OptionsBuilder<GetDBOptions, GetCacheOptions>(dbOptions)
-      .build();
+    const options = new OptionsBuilder<GetDBOptions, GetCacheOptions>(
+      dbOptions
+    ).build();
 
     const account = await this.storage.get(options);
     return account;

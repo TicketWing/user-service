@@ -1,12 +1,13 @@
-import {
-  GetDBOptions,
-  InsertDBOptions,
-  UpdateDBOptions,
-} from "ticketwing-storage-util/src/types/database.types";
 import knexConfig from "../../knexfile";
 import { redisConfig } from "../confs/redis.conf";
 import { Checkpoint } from "../types/checkpoint.types";
-import { OptionsBuilder, Storage } from "ticketwing-storage-util";
+import {
+  GetDBOptions,
+  InsertDBOptions,
+  OptionsBuilder,
+  Storage,
+  UpdateDBOptions,
+} from "ticketwing-storage-util";
 
 export class CheckpointService {
   private table = "checkpoints";
@@ -54,7 +55,7 @@ export class CheckpointService {
     const options = new OptionsBuilder<GetDBOptions, undefined>(
       dbOptions
     ).build();
-    
+
     const record = await this.storage.get(options);
     return record[0].isFinished;
   }

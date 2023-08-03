@@ -187,7 +187,7 @@
     "supports-color": "^7.2.0",
     "supports-preserve-symlinks-flag": "^1.0.0",
     "text-table": "^0.2.0",
-    "ticketwing-storage-util": "^1.4.5",
+    "ticketwing-storage-util": "^1.5.0",
     "to-regex-range": "^5.0.1",
     "tsconfig-paths": "^3.14.2",
     "tslib": "^1.14.1",
@@ -209,7 +209,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint . --ext .ts --fix"
+    "lint": "eslint . --ext .ts --fix",
+    "build": "tsc"
   },
   "author": "Vladyslav Shevyrov",
   "license": "ISC"

@@ -2,9 +2,12 @@ import knexConfig from "../../knexfile";
 import { redisConfig } from "../confs/redis.conf";
 import { TokenUtil } from "../utils/token.util";
 import { Identification } from "../types/user.types";
-import { OptionsBuilder, Storage } from "ticketwing-storage-util";
-import { InsertDBOptions } from "ticketwing-storage-util/src/types/database.types";
-import { InsertCacheOptions } from "ticketwing-storage-util/src/types/cache.types";
+import {
+  InsertCacheOptions,
+  InsertDBOptions,
+  OptionsBuilder,
+  Storage,
+} from "ticketwing-storage-util";
 
 export class TokenService {
   private table = "tokens";
