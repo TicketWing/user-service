@@ -5,8 +5,6 @@ import {
   InitialStep,
   AuthRedirect,
 } from "../types/user.types";
-import knexConfig from "../../knexfile";
-import { redisConfig } from "../confs/redis.conf";
 import { CustomError } from "../utils/error.util";
 import { PasswordUtil } from "../utils/password.util";
 import { TokenService } from "./token.service";
@@ -21,18 +19,23 @@ import {
   UpdateDBOptions,
   UpdateCacheOptions,
 } from "ticketwing-storage-util";
+import { databasePool, redisClient } from "../connections/storage";
 
 export class UserService {
   private token: TokenService;
-  private storage: Storage;
+  private storage!: Storage;
   private password: PasswordUtil;
   private checkpoint: CheckpointService;
 
   constructor() {
-    this.token = new TokenService();
+    this.token = new TokenService().initStorage();
     this.password = new PasswordUtil();
-    this.checkpoint = new CheckpointService();
-    this.storage = new Storage(knexConfig.development, redisConfig, "users");
+    this.checkpoint = new CheckpointService().initStorage();
+  }
+
+  initStorage() {
+    this.storage = new Storage(databasePool, redisClient, "users");
+    return this;
   }
 
   async getById(id: string) {

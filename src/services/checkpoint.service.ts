@@ -1,5 +1,4 @@
-import knexConfig from "../../knexfile";
-import { redisConfig } from "../confs/redis.conf";
+import { databasePool, redisClient } from "../connections/storage";
 import { Checkpoint } from "../types/checkpoint.types";
 import {
   GetDBOptions,
@@ -11,10 +10,11 @@ import {
 
 export class CheckpointService {
   private table = "checkpoints";
-  private storage: Storage;
+  private storage!: Storage;
 
-  constructor() {
-    this.storage = new Storage(knexConfig.development, redisConfig, this.table);
+  initStorage() {
+    this.storage = new Storage(databasePool, redisClient, this.table);
+    return this;
   }
 
   async setState(user_id: string) {

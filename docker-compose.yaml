@@ -8,15 +8,16 @@ services:
       - 8080:8080
     depends_on:
       - user-database
+      - user-redis
     command: sh -c /app/migrations/scripts/migrations.sh
   user-database:
     image: mysql:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Qwerty123
-      MYSQL_DATABASE: application
+      MYSQL_ROOT_PASSWORD: Qwerty1234
+      MYSQL_DATABASE: user-service
       MYSQL_USER: admin
-      MYSQL_PASSWORD: Qwerty123
+      MYSQL_PASSWORD: Qwerty1234
     volumes:
       - ./mysql_data:/var/lib/mysql
     ports:

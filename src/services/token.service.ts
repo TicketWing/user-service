@@ -1,5 +1,3 @@
-import knexConfig from "../../knexfile";
-import { redisConfig } from "../confs/redis.conf";
 import { TokenUtil } from "../utils/token.util";
 import { Identification } from "../types/user.types";
 import {
@@ -8,15 +6,20 @@ import {
   OptionsBuilder,
   Storage,
 } from "ticketwing-storage-util";
+import { databasePool, redisClient } from "../connections/storage";
 
 export class TokenService {
   private table = "tokens";
-  private storage: Storage;
+  private storage!: Storage;
   private util: TokenUtil;
 
   constructor() {
-    this.storage = new Storage(knexConfig.development, redisConfig, this.table);
     this.util = new TokenUtil();
+  }
+
+  initStorage() {
+    this.storage = new Storage(databasePool, redisClient, this.table);
+    return this;
   }
 
   getAccessToken(value: Identification) {

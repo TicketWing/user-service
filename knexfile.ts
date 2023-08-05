@@ -5,12 +5,13 @@ const config = {
     connection: {
       host: "user-database",
       port: 3306,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      user: 'admin',
+      password: 'Qwerty1234',
+      database: 'user-service',
     },
     migrations: {
-      directory: "./migrations",
+      directory: "migrations",
+      loadExtensions: ['.js']
     },
   },
 };

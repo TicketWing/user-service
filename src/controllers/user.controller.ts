@@ -10,7 +10,7 @@ export class UserController {
   private service: UserService;
 
   constructor() {
-    this.service = new UserService();
+    this.service = new UserService().initStorage();
   }
 
   async initRegistration(req: ExtendedRequest<InitialStep>) {

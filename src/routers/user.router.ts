@@ -21,11 +21,11 @@ export class UserRouter {
   addEndpoints() {
     this.router.post(
       "/step-one",
-      checkExistance({
-        isRequired: false,
-        pathToKey: ["body", "email"],
-        fn: this.controller.getByEmail,
-      }),
+      // checkExistance({
+      //   isRequired: false,
+      //   pathToKey: ["body", "email"],
+      //   fn: this.controller.getByEmail,
+      // }),
       responseMiddleware(this.controller.initRegistration),
       errorMiddleware
     );
