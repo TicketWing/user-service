@@ -1,4 +1,3 @@
-
 import { UserService } from "../services/user.service";
 import {
   AuthedExtendedRequest,
@@ -7,10 +6,7 @@ import {
 } from "../types/request.types";
 import { InitialStep, Login } from "../types/user.types";
 
-const reg = new UserService();
-
 export class UserController {
-  
   private service = new UserService();
 
   async initRegistration(req: ExtendedRequest<InitialStep>) {
@@ -28,19 +24,19 @@ export class UserController {
 
   async login(req: ExtendedRequest<Login>) {
     const { body } = req;
-    const result = await reg.login(body);
+    const result = await this.service.login(body);
     return result;
   }
 
   async getById(req: AuthedRequest) {
     const { identification } = req;
-    const result = reg.getById(identification.id);
+    const result = this.service.getById(identification.id);
     return result;
   }
 
   async getByEmail(req: ExtendedRequest<InitialStep>) {
     const { body } = req;
-    const result = reg.getByEmail(body.email);
+    const result = this.service.getByEmail(body.email);
     return result;
   }
 }
