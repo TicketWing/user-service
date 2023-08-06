@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     .then(function() {
       return knex.schema.createTable("tokens", (table) => {
         table.uuid("id").primary().defaultTo(knex.raw('uuid_generate_v4()'));
-        table.uuid("user_id").references("id").inTable("users");
+        table.uuid("user_id").references("id").inTable("users").unique();
         table.string("refreshToken");
       });
     });

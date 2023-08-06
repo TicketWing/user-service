@@ -9,12 +9,12 @@ export class TokenUtil {
 
   constructor() {
     this.accessOptions = {
-      secret: process.env.ACCESS_SECRET,
-      expiresIn: process.env.ACCESS_EXPIRATION,
+      secret: 'secret',
+      expiresIn: '36000',
     };
     this.refreshOptions = {
-      secret: process.env.REFRESH_SECRET,
-      expiresIn: process.env.REFRESF_EXPIRATION,
+      secret: 'secret',
+      expiresIn: '36000',
     };
   }
 

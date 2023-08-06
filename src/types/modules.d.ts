@@ -10,7 +10,7 @@ declare global {
       ACCESS_SECRET: string;
       REFRESH_SECRET: string;
       ACCESS_EXPIRATION: string;
-      REFRESF_EXPIRATION: string;
+      REFRESH_EXPIRATION: string;
     }
   }
 }

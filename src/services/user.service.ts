@@ -70,12 +70,12 @@ export class UserService {
     )
       .setCacheOptions(cacheOptions)
       .build();
+
     const id = await this.storage.insert(data, options);
-    console.log(id);
     await this.checkpoint.setState(id);
     const encodedData = { id, email: data.email };
     const accessToken = this.token.getAccessToken(encodedData);
-    return { accessToken, redirect: true, url: "/registration/step/2" };
+    return { accessToken, redirect: true, url: "/registration/step-two" };
   }
 
   async fillInAccount(data: FinalStep): Promise<AuthTokens> {

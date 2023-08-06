@@ -6,9 +6,7 @@ export const responseMiddleware =
   async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const result = await cb(req);
-      if (result.redirect) {
-        res.json(result.token);
-      }
+      res.json(result);
     } catch (error) {
       next(error);
     }

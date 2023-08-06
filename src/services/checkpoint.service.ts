@@ -24,11 +24,11 @@ export class CheckpointService {
       getDbOptions
     ).build();
 
-    const records = await this.storage.get(getOptions);
-    console.log("Checpoint RECORDS", records);
-    if (!records.length) {
+    const record = await this.storage.get(getOptions);
+
+    if (!record) {
       const data = { user_id };
-      const insertDbOptions = { returning: [] };
+      const insertDbOptions = { returning: ['id'] };
 
       const options = new OptionsBuilder<InsertDBOptions, undefined>(
         insertDbOptions
@@ -38,7 +38,7 @@ export class CheckpointService {
       return;
     }
 
-    const data = { ...records[0] };
+    const data: any = { ...record };
     data.isFinished = !data.isFinished;
     const updateDbOptions = { where: { user_id } };
 
