@@ -10,11 +10,11 @@ export class TokenUtil {
   constructor() {
     this.accessOptions = {
       secret: 'secret',
-      expiresIn: '36000',
+      expiresIn: '3600000',
     };
     this.refreshOptions = {
       secret: 'secret',
-      expiresIn: '36000',
+      expiresIn: '3600000',
     };
   }
 

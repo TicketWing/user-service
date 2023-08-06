@@ -3,6 +3,7 @@ import { UserController } from "../controllers/user.controller";
 import { responseMiddleware } from "../middlewares/response.middleware";
 import { errorMiddleware } from "../middlewares/error.middleware";
 import { checkExistance } from "../middlewares/existance.middleware";
+import { authenticate } from "../middlewares/auth.middleware";
 
 export const userRouter = Router();
 const userController = new UserController();
@@ -14,5 +15,26 @@ userRouter.post(
     fn: userController.getByEmail.bind(userController),
   }),
   responseMiddleware(userController.initRegistration.bind(userController)),
+  errorMiddleware
+);
+
+userRouter.post(
+  "/step-two",
+  authenticate,
+  checkExistance({
+    isRequired: true,
+    fn: userController.getById.bind(userController),
+  }),
+  responseMiddleware(userController.finishRegistration.bind(userController)),
+  errorMiddleware
+);
+
+userRouter.post(
+  "/login",
+  checkExistance({
+    isRequired: true,
+    fn: userController.getByEmail.bind(userController),
+  }),
+  responseMiddleware(userController.login.bind(userController)),
   errorMiddleware
 );
