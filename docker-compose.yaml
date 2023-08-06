@@ -1,5 +1,6 @@
 version: "3.8"
 services:
+
   user-service:
     build:
       context: .
@@ -10,18 +11,19 @@ services:
       - user-database
       - user-redis
     command: sh -c /app/migrations/scripts/migrations.sh
+
   user-database:
-    image: mysql:latest
+    image: postgres:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Qwerty1234
-      MYSQL_DATABASE: user-service
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: Qwerty1234
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: Qwerty1234
+      POSTGRES_DB: user-service
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      - ./pg_data:/var/lib/postgresql/data
     ports:
-      - 3308:3306
+      - 5432:5432
+
   user-redis:
     image: redis:latest
     container_name: user_redis

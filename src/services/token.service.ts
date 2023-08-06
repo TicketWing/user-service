@@ -10,16 +10,12 @@ import { databasePool, redisClient } from "../connections/storage";
 
 export class TokenService {
   private table = "tokens";
-  private storage!: Storage;
+  private storage: Storage;
   private util: TokenUtil;
 
   constructor() {
     this.util = new TokenUtil();
-  }
-
-  initStorage() {
     this.storage = new Storage(databasePool, redisClient, this.table);
-    return this;
   }
 
   getAccessToken(value: Identification) {

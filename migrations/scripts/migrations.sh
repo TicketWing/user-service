@@ -1,5 +1,5 @@
 host=user-database
-port=3306
+port=5432
 
 
 while ! nc -z $host $port; do   

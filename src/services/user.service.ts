@@ -22,20 +22,17 @@ import {
 import { databasePool, redisClient } from "../connections/storage";
 
 export class UserService {
+  private table = "users";
   private token: TokenService;
-  private storage!: Storage;
+  private storage: Storage;
   private password: PasswordUtil;
   private checkpoint: CheckpointService;
 
   constructor() {
-    this.token = new TokenService().initStorage();
+    this.token = new TokenService();
     this.password = new PasswordUtil();
-    this.checkpoint = new CheckpointService().initStorage();
-  }
-
-  initStorage() {
-    this.storage = new Storage(databasePool, redisClient, "users");
-    return this;
+    this.checkpoint = new CheckpointService();
+    this.storage = new Storage(databasePool, redisClient, this.table);
   }
 
   async getById(id: string) {
@@ -64,7 +61,7 @@ export class UserService {
     return account;
   }
 
-  async initRegistration(data: InitialStep): Promise<AuthRedirect> {
+  async createAccount(data: InitialStep): Promise<AuthRedirect> {
     const dbOptions = { returning: ["id", "email", "name"] };
     const cacheOptions = { keyField: "id", cachedFields: ["email", "name"] };
 
@@ -73,15 +70,15 @@ export class UserService {
     )
       .setCacheOptions(cacheOptions)
       .build();
-
     const id = await this.storage.insert(data, options);
+    console.log(id);
     await this.checkpoint.setState(id);
     const encodedData = { id, email: data.email };
     const accessToken = this.token.getAccessToken(encodedData);
     return { accessToken, redirect: true, url: "/registration/step/2" };
   }
 
-  async finishRegistration(data: FinalStep): Promise<AuthTokens> {
+  async fillInAccount(data: FinalStep): Promise<AuthTokens> {
     const { id, email, ...info } = data;
     const dbOptions = { where: { id, email } };
     const cacheOptions = { cacheKey: id, updatingFields: ["age", "number"] };

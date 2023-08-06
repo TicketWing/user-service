@@ -8,13 +8,12 @@ dotenv.config();
 const app = express();
 const appRouters = new AppRouters(app);
 
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 appRouters.init();
 
-const server = app.listen(8080, () =>
-  console.log(`Server started on port ${3000}`)
-);
+const server = app.listen(8080);
 
 process.on("SIGTERM", () => {
   server.close(() => {

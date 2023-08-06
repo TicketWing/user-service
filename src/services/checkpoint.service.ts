@@ -10,14 +10,14 @@ import {
 
 export class CheckpointService {
   private table = "checkpoints";
-  private storage!: Storage;
+  private storage: Storage;
 
-  initStorage() {
-    this.storage = new Storage(databasePool, redisClient, this.table);
-    return this;
+  constructor() {
+    this.storage = new Storage(databasePool, redisClient, "checkpoints");
   }
 
   async setState(user_id: string) {
+    
     const getDbOptions = { where: { user_id }, select: ["isFinished"] };
 
     const getOptions = new OptionsBuilder<GetDBOptions, undefined>(
@@ -25,7 +25,7 @@ export class CheckpointService {
     ).build();
 
     const records = await this.storage.get(getOptions);
-
+    console.log("Checpoint RECORDS", records);
     if (!records.length) {
       const data = { user_id };
       const insertDbOptions = { returning: [] };
