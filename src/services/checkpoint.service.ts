@@ -23,7 +23,7 @@ export class CheckpointService {
       getDbOptions
     ).build();
 
-    const record: any = await this.storage.get(getOptions);
+    const record = await this.storage.get(getOptions);
 
     if (!record) {
       const data = { user_id };
@@ -54,7 +54,7 @@ export class CheckpointService {
       dbOptions
     ).build();
 
-    const record: any = await this.storage.get(options);
+    const record = await this.storage.get(options);
     return record.isFinished;
   }
 }

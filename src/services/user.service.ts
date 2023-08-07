@@ -102,7 +102,7 @@ export class UserService {
 
   async login(data: Login): Promise<AuthRedirect | AuthTokens> {
     const records = await this.getByEmail(data.email);
-    const { password, ...encoded }: any = records;
+    const { password, ...encoded } = records;
     const similar = this.password.compare(data.password, password);
     const state = await this.checkpoint.getState(encoded.id);
 

@@ -7,11 +7,14 @@ export const responseMiddleware =
   async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       const data = await cb(req);
-      const result = new ResponseConstructor<any>(
-        true,
-        "Success",
-        data
-      ).toJson();
+
+      if (data.refreshToken) {
+        res.cookie("refreshToken", data.refreshToken);
+        delete data.refreshToken;
+      }
+
+      const result = new ResponseConstructor<any>(true, "Success", data);
+
       res.status(200).json(result);
     } catch (error) {
       next(error);

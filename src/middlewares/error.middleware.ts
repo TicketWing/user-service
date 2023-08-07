@@ -7,6 +7,6 @@ export const errorMiddleware = (
   _req: any,
   res: Response
 ) => {
-  const result = new ResponseConstructor(false, err.message).toJson();
+  const result = new ResponseConstructor(false, err.message);
   res.status(500).json(result);
 };

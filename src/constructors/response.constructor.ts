@@ -17,11 +17,4 @@ export class ResponseConstructor<T> {
     return new ResponseConstructor<T>(false, message);
   }
 
-  toJson(): string {
-    return JSON.stringify({
-      success: this.success,
-      message: this.message,
-      data: this.data,
-    });
-  }
 }
