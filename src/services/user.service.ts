@@ -20,6 +20,7 @@ import {
   UpdateCacheOptions,
 } from "ticketwing-storage-util";
 import { databasePool, redisClient } from "../connections/storage";
+import { Cookies } from "../types/request.types";
 
 export class UserService {
   private table = "users";
@@ -79,7 +80,7 @@ export class UserService {
     await this.checkpoint.setState(id);
     const encodedData = { id, email: data.email };
     const accessToken = this.token.getAccessToken(encodedData);
-    return { accessToken, redirect: true, url: "/registration/step-two" };
+    return { accessToken, url: "/registration/step-two" };
   }
 
   async fillInAccount(data: FinalStep): Promise<AuthTokens> {
@@ -115,6 +116,19 @@ export class UserService {
     }
 
     const accessToken = this.token.getAccessToken(encoded);
-    return { accessToken, redirect: true, url: "/registration/step/2" };
+    return { accessToken, url: "/registration/step-two" };
+  }
+
+  async refresh(cookies: Cookies) {
+    const { refreshToken } = cookies;
+    const decodedData = this.token.decodeToken(refreshToken);
+
+    if (typeof decodedData === "string") {
+      throw new CustomError("Token Error", "Expired refresh token", 401);
+    }
+
+    const encodedData = { id: decodedData.id, email: decodedData.email };
+    const tokens = await this.token.updateTokens(encodedData);
+    return tokens;
   }
 }

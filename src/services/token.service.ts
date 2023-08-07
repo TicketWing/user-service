@@ -19,6 +19,11 @@ export class TokenService {
     this.storage = new Storage(databasePool, redisClient, this.table);
   }
 
+  decodeToken(token: string) {
+    const decodedData = this.util.decodeToken(token);
+    return decodedData;
+  }
+
   getAccessToken(value: Identification) {
     return this.util.getAccessToken(value);
   }

@@ -9,17 +9,28 @@ export class TokenUtil {
 
   constructor() {
     this.accessOptions = {
-      secret: 'secret',
-      expiresIn: '3600000',
+      secret: "secret",
+      expiresIn: "3600000",
     };
     this.refreshOptions = {
-      secret: 'secret',
-      expiresIn: '3600000',
+      secret: "secret",
+      expiresIn: "3600000",
     };
   }
 
   private generate(value: Identification, secret: string, expiresIn: string) {
     return this.util.sign(value, secret, { expiresIn });
+  }
+
+  decodeToken(token: string) {
+    const isAccessToken = token.includes("Bearer ");
+    const { secret } = isAccessToken ? this.accessOptions : this.refreshOptions;
+
+    if (isAccessToken) {
+      token = token.replace("Bearer ", "");
+    }
+
+    return jwt.verify(token, secret);
   }
 
   getAccessToken(value: Identification): string {

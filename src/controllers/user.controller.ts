@@ -1,8 +1,10 @@
+import { Request } from "express";
 import { UserService } from "../services/user.service";
 import {
   AuthedExtendedRequest,
   AuthedRequest,
   ExtendedRequest,
+  RequestWithCookies,
 } from "../types/request.types";
 import { InitialStep, Login } from "../types/user.types";
 
@@ -28,15 +30,21 @@ export class UserController {
     return result;
   }
 
+  async refresh(req: RequestWithCookies) {
+    const { cookies } = req;
+    const result = await this.service.refresh(cookies);
+    return result;
+  }
+
   async getById(req: AuthedRequest) {
     const { identification } = req;
-    const result = this.service.getById(identification.id);
+    const result = await this.service.getById(identification.id);
     return result;
   }
 
   async getByEmail(req: ExtendedRequest<InitialStep>) {
     const { body } = req;
-    const result = this.service.getByEmail(body.email);
+    const result = await this.service.getByEmail(body.email);
     return result;
   }
 }
