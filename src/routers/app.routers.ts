@@ -9,6 +9,6 @@ export class AppRouters {
   }
 
   init() {
-    this.app.use("/registration", userRouter);
+    this.app.use("/user", userRouter);
   }
 }

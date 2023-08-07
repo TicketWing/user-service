@@ -12,7 +12,6 @@ export const applyPassportStrategy = (passport: PassportStatic) => {
   passport.use(
     new Strategy(options, async (data: Identification, done: VerifiedCallback) => {
       try {
-        console.log(data);
         if (data.id) {
           return done(null, data);
         }

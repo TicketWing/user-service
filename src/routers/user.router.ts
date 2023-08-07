@@ -4,12 +4,19 @@ import { responseMiddleware } from "../middlewares/response.middleware";
 import { errorMiddleware } from "../middlewares/error.middleware";
 import { checkExistance } from "../middlewares/existance.middleware";
 import { authenticate } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  FinalStepSchema,
+  LoginAndInitialStepSchema,
+} from "../validation/auth.schema";
 
 export const userRouter = Router();
+
 const userController = new UserController();
 
 userRouter.post(
-  "/step-one",
+  "/registration/step-one",
+  validate(LoginAndInitialStepSchema),
   checkExistance({
     isRequired: false,
     fn: userController.getByEmail.bind(userController),
@@ -19,7 +26,8 @@ userRouter.post(
 );
 
 userRouter.post(
-  "/step-two",
+  "/registration/step-two",
+  validate(FinalStepSchema),
   authenticate,
   checkExistance({
     isRequired: true,
@@ -31,6 +39,7 @@ userRouter.post(
 
 userRouter.post(
   "/login",
+  validate(LoginAndInitialStepSchema),
   checkExistance({
     isRequired: true,
     fn: userController.getByEmail.bind(userController),
