@@ -7,12 +7,12 @@ export const authenticate = (req: any, res: Response, next: NextFunction) => {
   passport.authenticate(
     "jwt",
     { session: false },
-    (err: Error, identification: Identification, info: any) => {
+    (err: Error, data: Identification, info: any) => {
       if (err) {
         return next(err);
       }
 
-      if (!identification) {
+      if (!data) {
         const error = new CustomError("Token", "Wrong token", 401);
         return next(error);
       }
@@ -22,7 +22,8 @@ export const authenticate = (req: any, res: Response, next: NextFunction) => {
         return next(error);
       }
 
-      req.identification = identification;
+      const { id, email } = data;
+      req.identification = { id, email };
       next();
     }
   )(req, res, next);

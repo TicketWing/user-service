@@ -62,8 +62,11 @@ export class UserService {
   }
 
   async createAccount(data: InitialStep): Promise<AuthRedirect> {
-    const dbOptions = { returning: ["id", "email", "name"] };
-    const cacheOptions = { keyField: "id", cachedFields: ["email", "name"] };
+    const dbOptions = { returning: ["id", "email", "name", "age"] };
+    const cacheOptions = {
+      keyField: "id",
+      cachedFields: ["email", "name", "age"],
+    };
 
     const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
       dbOptions
@@ -71,6 +74,7 @@ export class UserService {
       .setCacheOptions(cacheOptions)
       .build();
 
+    data.password = this.password.hash(data.password);
     const id = await this.storage.insert(data, options);
     await this.checkpoint.setState(id);
     const encodedData = { id, email: data.email };
@@ -97,7 +101,7 @@ export class UserService {
 
   async login(data: Login): Promise<AuthRedirect | AuthTokens> {
     const records = await this.getByEmail(data.email);
-    const { password, ...encoded } = records[0];
+    const { password, ...encoded }: any = records;
     const similar = this.password.compare(data.password, password);
     const state = await this.checkpoint.getState(encoded.id);
 
@@ -106,7 +110,7 @@ export class UserService {
     }
 
     if (similar && state) {
-      const tokens = this.token.getTokens(encoded);
+      const tokens = this.token.updateTokens(encoded);
       return tokens;
     }
 

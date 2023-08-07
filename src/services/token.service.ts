@@ -5,6 +5,7 @@ import {
   InsertDBOptions,
   OptionsBuilder,
   Storage,
+  UpdateDBOptions,
 } from "ticketwing-storage-util";
 import { databasePool, redisClient } from "../connections/storage";
 
@@ -25,8 +26,11 @@ export class TokenService {
   async getTokens(value: Identification) {
     const { accessToken, refreshToken } = this.util.getTokens(value);
     const data = { user_id: value.id, refreshToken };
-    const dbOptions = { returning: ["user_id", "token"] };
-    const cacheOptions = { keyField: "user_id", cachedFields: ["token"] };
+    const dbOptions = { returning: ["user_id", "refreshToken"] };
+    const cacheOptions = {
+      keyField: "user_id",
+      cachedFields: ["refreshToken"],
+    };
 
     const options = new OptionsBuilder<InsertDBOptions, InsertCacheOptions>(
       dbOptions
@@ -35,6 +39,18 @@ export class TokenService {
       .build();
 
     await this.storage.insert(data, options);
+    return { accessToken, refreshToken };
+  }
+
+  async updateTokens(value: Identification) {
+    const { accessToken, refreshToken } = this.util.getTokens(value);
+    const dbOptions = { where: { user_id: value.id } };
+
+    const options = new OptionsBuilder<UpdateDBOptions, undefined>(
+      dbOptions
+    ).build();
+
+    await this.storage.update({ refreshToken }, options);
     return { accessToken, refreshToken };
   }
 }

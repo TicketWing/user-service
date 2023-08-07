@@ -7,7 +7,7 @@ export class PasswordUtil {
   private method: BufferEncoding;
 
   constructor() {
-    this.salt = process.env.SECRET_KEY;
+    this.salt = "salt";
     this.length = 64;
     this.method = "hex";
   }
